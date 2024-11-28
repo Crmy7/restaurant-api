@@ -14,12 +14,14 @@ var authentificationMiddleware = require("./middlewares/authentification");
 
 // Importation des routes
 var indexRouter = require("./routes/index");
-var restaurantsManagementRouter = require("./routes/admin/restaurant.js");
-var cartRouter = require("./routes/cart/index.js");
-var dishManagementRouter = require("./routes/admin/dish.js");
+var restaurantsManagementAdmin = require("./routes/admin/restaurant.js");
+var restaurantManagement = require("./routes/restaurant/restaurant.js");
+var dishManagement = require("./routes/restaurant/dish/dish.js");
 const adminAuth = require("./routes/auth/admin.js");
 const userAuth = require("./routes/auth/client.js");
 var usersRouter = require("./routes/users/user.js");
+const ordersRouter = require("./routes/order/order.js");
+const orderRestaurant = require("./routes/restaurant/order/order.js");
 
 var app = express();
 // Middleware pour gérer CORS
@@ -36,9 +38,9 @@ app.use(authentificationMiddleware);
 
 // Préfixe /api pour les routes API
 app.use("/api", indexRouter);
-app.use("/api/admin/restaurants", restaurantsManagementRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/admin/", dishManagementRouter);
+app.use("/api/admin/restaurants", restaurantsManagementAdmin);
+app.use("/api/orders", ordersRouter);
+
 
 // Préfixe /api/auth pour les routes d'authentification
 app.use("/api/auth/admin", adminAuth);
@@ -46,6 +48,15 @@ app.use("/api/auth", userAuth);
 
 // Préfixe /api/users pour les routes utilisateurs
 app.use("/api/users", usersRouter);
+
+// Préfixe /api/restaurant pour les routes restaurant
+app.use("/api/restaurant", restaurantManagement);
+
+// Préfixe /api/restaurant/dish pour les routes plat
+app.use("/api/restaurant/dishes", dishManagement);
+
+// Préfixe /api/restaurant/order pour les routes commande
+app.use("/api/restaurant", orderRestaurant);
 
 // Gestion des erreurs 404
 app.use(function (req, res, next) {

@@ -28,10 +28,11 @@ const User = sequelize.define("User", {
     },
   },
   role: {
-    type: DataTypes.ENUM("admin", "user"),
+    type: DataTypes.ENUM("admin", "user", "restaurateur"),
     defaultValue: "user",
   },
 });
+
 
 // Hash the password before saving the user
 User.beforeCreate(async (user) => {

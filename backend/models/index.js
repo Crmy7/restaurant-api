@@ -3,27 +3,47 @@ const sequelize = require("./_database");
 const User = require("./User");
 const Restaurant = require("./Restaurants");
 const Dishes = require("./Dishes");
-const Cart = require("./Cart");
-const CartDishes = require("./CartDishes");
+const Orders = require("./Orders");
+const OrderItem = require("./OrderItem");
 
-Dishes.belongsTo(Restaurant, { through: "RestaurantId" });
-Restaurant.hasMany(Dishes);
+// Associations entre les modèles
 
-// Attribute dishes to user
-Dishes.belongsTo(User, { through: "UserId" });
+// Un restaurant peut avoir plusieurs plats, chaque plat appartient à un seul restaurant
+Restaurant.hasMany(Dishes, { foreignKey: "RestaurantId", onDelete: "CASCADE" });
+Dishes.belongsTo(Restaurant, { foreignKey: "RestaurantId" });
 
-// Attribute restaurant to user
-Restaurant.belongsTo(User, { through: "UserId" });
+// Un plat peut être créé par un utilisateur, chaque utilisateur peut créer plusieurs plats
+User.hasMany(Dishes, { foreignKey: "UserId", onDelete: "CASCADE" });
+Dishes.belongsTo(User, { foreignKey: "UserId" });
 
-// Attribute cart to user with dishes
-Cart.hasMany(CartDishes, { foreignKey: "CartId", onDelete: "CASCADE" });
-CartDishes.belongsTo(Cart, { foreignKey: "CartId" });
+// Un utilisateur peut posséder plusieurs restaurants, chaque restaurant appartient à un utilisateur
+User.hasMany(Restaurant, { foreignKey: "UserId", onDelete: "CASCADE" });
+Restaurant.belongsTo(User, { foreignKey: "UserId" });
 
-// // Synchronisation de la base
+// Un utilisateur peut passer plusieurs commandes, chaque commande appartient à un utilisateur
+User.hasMany(Orders, { foreignKey: "UserId", onDelete: "CASCADE" });
+Orders.belongsTo(User, { foreignKey: "UserId" });
+
+// Une commande est liée à un restaurant (les plats commandés doivent provenir d'un restaurant)
+Restaurant.hasMany(Orders, { foreignKey: "RestaurantId", onDelete: "CASCADE" });
+Orders.belongsTo(Restaurant, { foreignKey: "RestaurantId" });
+
+// Une commande peut contenir plusieurs articles, chaque article appartient à une commande
+Orders.hasMany(OrderItem, { foreignKey: "OrderId", onDelete: "CASCADE" });
+OrderItem.belongsTo(Orders, { foreignKey: "OrderId" });
+
+// Un article de commande est lié à un plat
+OrderItem.belongsTo(Dishes, { foreignKey: "DishId", onDelete: "CASCADE" });
+Dishes.hasMany(OrderItem, { foreignKey: "DishId", onDelete: "CASCADE" });
+
+
+// Synchronisation de la base
 sequelize.sync();
 
 module.exports = {
-  User: User,
-  Restaurant: Restaurant,
-  Dishes: Dishes,
+  User,
+  Restaurant,
+  Dishes,
+  Orders,
+  OrderItem,
 };

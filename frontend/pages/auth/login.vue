@@ -61,6 +61,10 @@
         <p v-if="errorMessage" class="mt-2 text-center text-sm text-red-500">
           {{ errorMessage }}
         </p>
+        <p v-if="authStore.user">
+          Bonjour, {{ authStore.user.username }} (Rôle :
+          {{ authStore.user.role }})
+        </p>
       </form>
     </div>
   </div>
@@ -82,7 +86,20 @@ const submit = async () => {
     password.value
   );
   if (success) {
-    navigateTo("/");
+    try {
+      await authStore.getUser(); // Charge les informations de l'utilisateur connecté
+      console.log("User ROLE : ", authStore.user.role);
+      if (authStore.user.role === "admin") {
+        navigateTo("/admin/dashboard");
+      } else if (authStore.user.role === "restaurateur") {
+        navigateTo("/dashboard");
+      } else {
+        navigateTo("/");
+      }
+    } catch (error) {
+      console.error("Impossible de charger l'utilisateur :", error);
+    }
+    // navigateTo("/");
   } else {
     errorMessage.value = error;
   }
