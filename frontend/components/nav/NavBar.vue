@@ -1,7 +1,7 @@
 <template>
   <div class="w-full top-0 p-2 xl:p-4 flex justify-between max-w-7xl mx-auto">
     <!-- Bouton de retour -->
-    <button @click="goBack" class="flex items-center text-black">
+    <button @click="goBack" class="flex items-center text-black w-[30px]">
       <Icon
         v-if="!isHomePage"
         name="material-symbols-light:chevron-left"

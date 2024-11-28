@@ -37,6 +37,26 @@ async function authentificationMiddleware(req, res, next) {
 
     // Injecte l'utilisateur dans req.user pour les routes suivantes
     req.user = user;
+
+    // Gestion des restrictions par rôle
+    const path = req.path.toLowerCase();
+    const method = req.method.toLowerCase();
+
+    // Routes spécifiques aux administrateurs
+    if (path.startsWith("/api/admin")) {
+      if (user.role !== "admin") {
+        return res.status(403).json({ error: "Accès interdit : réservé aux administrateurs." });
+      }
+    }
+
+    // Routes spécifiques aux restaurateurs
+    if (path.startsWith("/api/manage/restaurant")) {
+      if (user.role !== "restaurateur" && user.role !== "admin") {
+        return res.status(403).json({ error: "Accès interdit : réservé aux restaurateurs ou administrateurs." });
+      }
+    }
+
+    // Si tout est valide, passer au middleware suivant
     next();
   } catch (error) {
     console.error("Erreur lors de la vérification du token :", error);

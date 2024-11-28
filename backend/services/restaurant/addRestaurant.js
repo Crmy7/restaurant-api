@@ -5,17 +5,34 @@ const slugify = require("slugify");
 // Ajouter un restaurant et créer un utilisateur Restaurateur
 module.exports = async (req, res) => {
   try {
-    const { name, address, city, zipCode, country, phone, email, website, description, image, ownerEmail, ownerPassword } = req.body;
+    const {
+      name,
+      address,
+      city,
+      zipCode,
+      country,
+      phone,
+      email,
+      website,
+      description,
+      image,
+      ownerEmail,
+      ownerPassword,
+    } = req.body;
 
     // Validation des champs nécessaires
     if (!ownerEmail || !ownerPassword) {
-      return res.status(400).json({ error: "L'email et le mot de passe du restaurateur sont obligatoires." });
+      return res
+        .status(400)
+        .json({ error: "L'email et le mot de passe du restaurateur sont obligatoires." });
     }
 
     // Vérifier si un utilisateur avec cet email existe déjà
     const existingUser = await User.findOne({ where: { username: ownerEmail } });
     if (existingUser) {
-      return res.status(400).json({ error: "Un utilisateur avec cet email existe déjà." });
+      return res
+        .status(400)
+        .json({ error: "Un utilisateur avec cet email existe déjà." });
     }
 
     // Créer un utilisateur avec le rôle Restaurateur
@@ -55,6 +72,16 @@ module.exports = async (req, res) => {
     });
   } catch (error) {
     console.error("Erreur lors de la création du restaurant :", error);
-    return res.status(500).json({ error: "Une erreur s'est produite lors de la création du restaurant." });
+
+    // Vérifie si l'erreur est une erreur spécifique ou un défaut
+    if (error.name === "SequelizeValidationError") {
+      return res
+        .status(400)
+        .json({ error: "Données invalides. Veuillez vérifier vos informations." });
+    }
+
+    return res
+      .status(500)
+      .json({ error: "Une erreur s'est produite lors de la création du restaurant." });
   }
 };

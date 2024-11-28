@@ -18,7 +18,7 @@ Dishes.belongsTo(User, { foreignKey: "UserId" });
 
 // Un utilisateur peut posséder plusieurs restaurants, chaque restaurant appartient à un utilisateur
 User.hasMany(Restaurant, { foreignKey: "UserId", onDelete: "CASCADE" });
-Restaurant.belongsTo(User, { foreignKey: "UserId" });
+Restaurant.belongsTo(User, { foreignKey: "UserId", onDelete: "CASCADE" });
 
 // Un utilisateur peut passer plusieurs commandes, chaque commande appartient à un utilisateur
 User.hasMany(Orders, { foreignKey: "UserId", onDelete: "CASCADE" });

@@ -10,7 +10,8 @@ module.exports = async (req, res) => {
 
   // Validation des données reçues
   if (!name || !price || !image || !description || !id_restaurant) {
-    return res.status(400).json({ error: "Tous les champs sont requis." });
+    console.log(name, price, image, description, id_restaurant);
+    return res.status(400).json({ error: `Tous les champs sont requis. ${name} ${price} ${image} ${description} ${id_restaurant}` });
   }
 
   try {

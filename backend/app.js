@@ -50,13 +50,13 @@ app.use("/api/auth", userAuth);
 app.use("/api/users", usersRouter);
 
 // Préfixe /api/restaurant pour les routes restaurant
-app.use("/api/restaurant", restaurantManagement);
+app.use("/api/manage/restaurant", restaurantManagement);
 
 // Préfixe /api/restaurant/dish pour les routes plat
-app.use("/api/restaurant/dishes", dishManagement);
+app.use("/api/manage/restaurant/dishes", dishManagement);
 
 // Préfixe /api/restaurant/order pour les routes commande
-app.use("/api/restaurant", orderRestaurant);
+app.use("/api/manage/restaurant", orderRestaurant);
 
 // Gestion des erreurs 404
 app.use(function (req, res, next) {

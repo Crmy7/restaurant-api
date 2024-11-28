@@ -1,4 +1,9 @@
 <script setup>
+import { ref } from "vue";
+import { useRestaurants } from "@/composables/useRestaurants";
+import { useDishes } from "@/composables/useDishes";
+import { useOrders } from "@/composables/useOrders";
+
 const currentTab = ref("restaurant");
 const restaurant = ref({});
 const dishes = ref([]);
@@ -18,7 +23,7 @@ try {
   dishes.value = await getDishesByRestaurant(restaurant.value.id);
   orders.value = await getOrdersByRestaurant(restaurant.value.id);
 } catch (error) {
-  errorMessage.value = "Erreur lors du chargement des données.";
+  errorMessage.value = error.message || "Erreur lors du chargement des données.";
   setTimeout(() => (errorMessage.value = ""), 3000);
   console.error(error);
 }
@@ -27,26 +32,35 @@ const updateRestaurant = async () => {
   try {
     await editRestaurant(restaurant.value);
     successMessage.value = "Restaurant mis à jour avec succès.";
-    setTimeout(() => (successMessage.value = ""), 3000); // Clear message after 3 seconds
+    setTimeout(() => (successMessage.value = ""), 3000);
   } catch (error) {
-    errorMessage.value = "Erreur lors de la mise à jour du restaurant.";
-    setTimeout(() => (errorMessage.value = ""), 3000); // Clear message after 3 seconds
+    errorMessage.value = error.message || "Erreur lors de la mise à jour du restaurant.";
+    setTimeout(() => (errorMessage.value = ""), 3000);
     console.error(error);
   }
 };
 
 const addNewDish = async () => {
   try {
+    successMessage.value = "";
+    errorMessage.value = "";
+
     await addDish(restaurant.value.id, newDish.value);
-    dishes.value = await getDishesByRestaurant(restaurant.value.id);
+
     successMessage.value = "Plat ajouté avec succès.";
-    newDish.value = { name: "", price: "", image: "", description: "" }; // Reset fields
+    dishes.value = await getDishesByRestaurant(restaurant.value.id); // Rafraîchissement des plats
     showAddDishPanel.value = false;
-    setTimeout(() => (successMessage.value = ""), 3000); // Clear message after 3 seconds
+    setTimeout(() => (successMessage.value = ""), 3000);
   } catch (error) {
-    errorMessage.value = "Erreur lors de l'ajout du plat.";
-    setTimeout(() => (errorMessage.value = ""), 3000); // Clear message after 3 seconds
-    console.error(error);
+    console.error("Erreur lors de l'ajout du plat :", error);
+
+    if (error.response?.status === 400) {
+      errorMessage.value = error.response.data.error || "Requête invalide.";
+    } else {
+      errorMessage.value = `Une erreur inattendue s'est produite (${error.message}).`;
+    }
+
+    setTimeout(() => (errorMessage.value = ""), 5000);
   }
 };
 

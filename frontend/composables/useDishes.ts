@@ -1,72 +1,71 @@
+import axios from "axios";
+
 export const useDishes = () => {
   const config = useRuntimeConfig();
   const urlBase = "http://localhost:2000/api/";
 
-  // Fonction pour récupérer un restaurant par son slug
+  const authHeader = () => {
+    const token = useCookie("authToken").value;
+    return { Authorization: `Bearer ${token}` };
+  };
+
+  // Fonction pour récupérer un plat par son slug
   async function getDishBySlug(slug: string) {
     try {
-      const { data, error } = await useFetch(`${urlBase}dishes/${slug}`, {
-        headers: {
-          Authorization: `Bearer ${useCookie("authToken").value}`, // Ajoute le token de l'utilisateur
-        },
+      const response = await axios.get(`${urlBase}dishes/${slug}`, {
+        headers: authHeader(),
       });
-
-      if (error.value) {
-        throw new Error(error.value.message || "Erreur API");
-      }
-
-      return data.value;
+      return response.data;
     } catch (error) {
-      console.error("Erreur dans .getRestaurantBySlug :", error);
-      throw error;
+      console.error("Erreur dans useDishes.getDishBySlug :", error);
+      handleApiError(error);
     }
   }
 
   // Fonction pour récupérer les plats d'un restaurant spécifique
   async function getDishesByRestaurant(restaurantId: number) {
     try {
-      const { data, error } = await useFetch(
-        `${urlBase}restaurant/dishes/${restaurantId}`,
+      const response = await axios.get(
+        `${urlBase}manage/restaurant/dishes/${restaurantId}`,
         {
-          headers: {
-            Authorization: `Bearer ${useCookie("authToken").value}`,
-          },
+          headers: authHeader(),
         }
       );
-
-      if (error.value) {
-        throw new Error(error.value.message || "Erreur API");
-      }
-
-      return data.value;
+      return response.data;
     } catch (error) {
       console.error("Erreur dans useDishes.getDishesByRestaurant :", error);
-      throw error;
+      handleApiError(error);
     }
   }
 
   // Fonction pour ajouter un plat à un restaurant
   async function addDish(restaurantId: number, dishData: FormData) {
     try {
-      const { data, error } = await useFetch(
-        `${urlBase}restaurant/dishes/${restaurantId}/new-dish`,
+      const response = await axios.post(
+        `${urlBase}manage/restaurant/dishes/${restaurantId}/new-dish`,
+        dishData,
         {
-          method: "POST",
           headers: {
-            Authorization: `Bearer ${useCookie("authToken").value}`,
+            ...authHeader(),
+            "Content-Type": "multipart/form-data", // Pour le support des fichiers
           },
-          body: dishData,
         }
       );
-
-      if (error.value) {
-        throw new Error(error.value.message || "Erreur API");
-      }
-
-      return data.value;
+      return response.data;
     } catch (error) {
       console.error("Erreur dans useDishes.addDish :", error);
-      throw error;
+      handleApiError(error);
+    }
+  }
+
+  // Gestion des erreurs API
+  function handleApiError(error: any) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || "Erreur API inconnue.";
+      throw { status, message };
+    } else {
+      throw { status: 500, message: "Erreur inattendue." };
     }
   }
 

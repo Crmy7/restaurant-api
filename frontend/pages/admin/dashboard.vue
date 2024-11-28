@@ -1,289 +1,144 @@
 <script setup>
 import { ref } from "vue";
-import { useRestaurants } from "@/composables/useRestaurants";
+import NewRestaurant from "@/components/NewRestaurant.vue";
+import RestaurantList from "@/components/RestaurantList.vue";
 
-// État du formulaire avec des valeurs par défaut
-const newRestaurant = ref({
-  name: "Restaurant par défaut",
-  address: "123 Rue Exemple",
-  city: "Paris",
-  zipCode: "75001",
-  country: "France",
-  phone: "+33 1 23 45 67 89",
-  email: "restaurant@example.com",
-  website: "https://www.example.com",
-  description: "Description par défaut du restaurant.",
-  image: "https://via.placeholder.com/150",
-  ownerEmail: "proprietaire@example.com",
-  ownerPassword: "motdepassepardefault",
-});
-
-// Messages de feedback
+const showModal = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
 
-// Utilisation du composable
-const { addRestaurant } = useRestaurants();
+const toggleModal = () => {
+  showModal.value = !showModal.value;
+};
 
-// Fonction pour envoyer le formulaire d'ajout d'un restaurant
-const submitRestaurant = async () => {
-  try {
-    successMessage.value = "";
-    errorMessage.value = "";
+// Gestion des messages
+const handleSuccess = (message) => {
+  successMessage.value = message;
+  setTimeout(() => (successMessage.value = ""), 3000);
+};
 
-    await addRestaurant(newRestaurant.value);
+const handleError = (message) => {
+  errorMessage.value = message;
+  setTimeout(() => (errorMessage.value = ""), 5000);
+};
 
-    successMessage.value = "Restaurant créé avec succès.";
-    // Réinitialiser le formulaire après succès
-    newRestaurant.value = {
-      name: "Restaurant par défaut",
-      address: "123 Rue Exemple",
-      city: "Paris",
-      zipCode: "75001",
-      country: "France",
-      phone: "+33 1 23 45 67 89",
-      email: "restaurant@example.com",
-      website: "https://www.example.com",
-      description: "Description par défaut du restaurant.",
-      image: "https://via.placeholder.com/150",
-      ownerEmail: "proprietaire@example.com",
-      ownerPassword: "motdepassepardefault",
-    };
-
-    setTimeout(() => (successMessage.value = ""), 3000); // Clear success message after 3 seconds
-  } catch (error) {
-    console.error("Erreur lors de l'ajout du restaurant :", error);
-    errorMessage.value = error.message || "Une erreur s'est produite.";
-    setTimeout(() => (errorMessage.value = ""), 3000); // Clear error message after 3 seconds
+// Rafraîchir la liste des restaurants après ajout
+const refreshRestaurants = () => {
+  const listComponent = document.querySelector("#restaurant-list");
+  if (listComponent && listComponent.refresh) {
+    listComponent.refresh();
   }
 };
 </script>
 
 <template>
-  <div class="p-8 bg-gray-100 min-h-screen">
-    <h1 class="text-2xl font-bold text-purple-600 mb-6">Admin Dashboard</h1>
-    <div class="bg-white shadow rounded-lg p-6">
-      <h2 class="text-xl font-bold mb-4">Ajouter un Restaurant</h2>
+  <div class="flex min-h-screen bg-gray-100">
+    <aside class="w-64 bg-white shadow-lg">
+      <div class="p-4">
+        <h1 class="text-xl font-bold text-purple-600 mb-8">Admin Dashboard</h1>
+        <button
+          @click="toggleModal"
+          class="w-full text-left px-4 py-2 rounded-lg bg-gray-100"
+        >
+          Restaurateurs
+        </button>
+      </div>
+    </aside>
 
-      <!-- Feedback Messages -->
+    <main class="flex-1 p-8">
+      <!-- Success Message -->
       <transition name="fade-slide" mode="out-in">
-        <p
+        <div
           v-if="successMessage"
-          class="bg-green-200 px-4 py-2 rounded-md text-green-800 flex items-center mb-4 fixed bottom-16 left-1/2 -translate-x-1/2"
+          class="bg-green-200 px-6 py-4 my-4 rounded-md text-lg flex items-center fixed bottom-16 left-1/2 -translate-x-1/2 z-50"
         >
-          <svg viewBox="0 0 24 24" class="w-5 h-5 mr-2 text-green-600">
-            <path
-              fill="currentColor"
-              d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
-            />
-          </svg>
-          {{ successMessage }}
-        </p>
-      </transition>
-
-      <transition name="fade-slide" mode="out-in">
-        <p
-          v-if="errorMessage"
-          class="bg-red-200 px-4 py-2 rounded-md text-red-800 flex items-center mb-4 fixed bottom-16 left-1/2 -translate-x-1/2"
-        >
-          <svg viewBox="0 0 24 24" class="w-5 h-5 mr-2 text-red-600">
-            <path
-              fill="currentColor"
-              d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
-            />
-          </svg>
-          {{ errorMessage }}
-        </p>
-      </transition>
-
-      <!-- Formulaire -->
-      <form @submit.prevent="submitRestaurant" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">
-              Nom du restaurant
-            </label>
-            <input
-              v-model="newRestaurant.name"
-              type="text"
-              id="name"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label for="address" class="block text-sm font-medium text-gray-700">
-              Adresse
-            </label>
-            <input
-              v-model="newRestaurant.address"
-              type="text"
-              id="address"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label for="city" class="block text-sm font-medium text-gray-700">
-              Ville
-            </label>
-            <input
-              v-model="newRestaurant.city"
-              type="text"
-              id="city"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              for="zipCode"
-              class="block text-sm font-medium text-gray-700"
-            >
-              Code postal
-            </label>
-            <input
-              v-model="newRestaurant.zipCode"
-              type="text"
-              id="zipCode"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              for="country"
-              class="block text-sm font-medium text-gray-700"
-            >
-              Pays
-            </label>
-            <input
-              v-model="newRestaurant.country"
-              type="text"
-              id="country"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700">
-              Téléphone
-            </label>
-            <input
-              v-model="newRestaurant.phone"
-              type="text"
-              id="phone"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              v-model="newRestaurant.email"
-              type="email"
-              id="email"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              for="website"
-              class="block text-sm font-medium text-gray-700"
-            >
-              Site Web
-            </label>
-            <input
-              v-model="newRestaurant.website"
-              type="text"
-              id="website"
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div class="col-span-2">
-            <label
-              for="description"
-              class="block text-sm font-medium text-gray-700"
-            >
-              Description
-            </label>
-            <textarea
-              v-model="newRestaurant.description"
-              id="description"
-              rows="4"
-              class="w-full p-2 border rounded-lg"
-            ></textarea>
-          </div>
-
-          <h2 class="text-xl font-bold col-span-2">Propriétaire</h2>
-
-          <div>
-            <label
-              for="ownerEmail"
-              class="block text-sm font-medium text-gray-700"
-            >
-              Email du propriétaire
-            </label>
-            <input
-              v-model="newRestaurant.ownerEmail"
-              type="email"
-              id="ownerEmail"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              for="ownerPassword"
-              class="block text-sm font-medium text-gray-700"
-            >
-              Mot de passe du propriétaire
-            </label>
-            <input
-              v-model="newRestaurant.ownerPassword"
-              type="password"
-              id="ownerPassword"
-              required
-              class="w-full p-2 border rounded-lg"
-            />
-          </div>
-        </div>
-
-        <!-- Bouton de soumission -->
-        <div class="mt-6 flex justify-end">
-          <button
-            type="submit"
-            class="bg-purple-600 text-white py-2 px-6 rounded-lg hover:bg-purple-700 shadow-lg"
+          <svg
+            viewBox="0 0 24 24"
+            class="text-green-600 w-5 h-5 sm:w-5 sm:h-5 mr-3"
           >
-            Ajouter le Restaurant
+            <path
+              fill="currentColor"
+              d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
+            />
+          </svg>
+          <span class="text-green-800">{{ successMessage }}</span>
+        </div>
+      </transition>
+
+      <!-- Error Message -->
+      <transition name="fade-slide" mode="out-in">
+        <div
+          v-if="errorMessage"
+          class="bg-red-200 px-6 py-4 my-4 rounded-md text-lg flex items-center fixed bottom-16 left-1/2 -translate-x-1/2 z-50"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="text-red-600 w-5 h-5 sm:w-5 sm:h-5 mr-3"
+          >
+            <path
+              fill="currentColor"
+              d="M11.983,0a12.206,12.206,0,0,0-8.51,3.653A11.8,11.8,0,0,0,0,12.207,11.779,11.779,0,0,0,11.8,24h.214A12.111,12.111,0,0,0,24,11.791h0A11.766,11.766,0,0,0,11.983,0ZM10.5,16.542a1.476,1.476,0,0,1,1.449-1.53h.027a1.527,1.527,0,0,1,1.523,1.47,1.475,1.475,0,0,1-1.449,1.53h-.027A1.529,1.529,0,0,1,10.5,16.542ZM11,12.5v-6a1,1,0,0,1,2,0v6a1,1,0,1,1-2,0Z"
+            />
+          </svg>
+          <span class="text-red-800">{{ errorMessage }}</span>
+        </div>
+      </transition>
+
+      <div class="p-8 bg-gray-100 min-h-screen">
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-2xl font-bold text-purple-600">
+            Liste des Restaurants
+          </h1>
+          <button
+            @click="toggleModal"
+            class="text-left px-4 py-2 rounded-lg bg-purple-600 text-white w-fit"
+          >
+            Ajouter un restaurant
           </button>
         </div>
-      </form>
-    </div>
+        <RestaurantList id="restaurant-list" />
+      </div>
+    </main>
+
+    <!-- Modal -->
+    <transition name="fade-slide" mode="out-in">
+      <div
+        v-if="showModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-30"
+      >
+        <div
+          class="bg-white p-6 rounded-lg shadow-lg max-w-7xl w-full modal-container"
+        >
+          <button @click="toggleModal" class="text-gray-600 float-right">
+            X
+          </button>
+          <NewRestaurant
+            @success="(msg) => { handleSuccess(msg); toggleModal(); refreshRestaurants(); }"
+            @error="handleError"
+          />
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
-<style>
+<style lang="scss" scoped>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.5s ease;
+  .modal-container {
+    transition: all 0.5s ease;
+  }
 }
 .fade-slide-enter-from {
-  opacity: 0;
+  .modal-container {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 }
 .fade-slide-leave-to {
-  opacity: 0;
+  .modal-container {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 </style>
