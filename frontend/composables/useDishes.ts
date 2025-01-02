@@ -39,16 +39,13 @@ export const useDishes = () => {
   }
 
   // Fonction pour ajouter un plat à un restaurant
-  async function addDish(restaurantId: number, dishData: FormData) {
+  async function addDish(restaurantId: number, dishData: any) {
     try {
       const response = await axios.post(
         `${urlBase}manage/restaurant/dishes/${restaurantId}/new-dish`,
-        dishData,
+        dishData, // Envoyer directement l'objet en JSON
         {
-          headers: {
-            ...authHeader(),
-            "Content-Type": "multipart/form-data", // Pour le support des fichiers
-          },
+          headers: authHeader(),
         }
       );
       return response.data;
@@ -57,6 +54,7 @@ export const useDishes = () => {
       handleApiError(error);
     }
   }
+   
 
   // Gestion des erreurs API
   function handleApiError(error: any) {

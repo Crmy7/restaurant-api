@@ -83,6 +83,21 @@ export const useRestaurants = () => {
     }
   }
 
+  async function deleteRestaurant(restaurantId: number) {
+    try {
+      const response = await axios.delete(
+        `${urlBase}admin/restaurants/delete-restaurant/${restaurantId}`,
+        {
+          headers: authHeader(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erreur dans useRestaurants.deleteRestaurant :", error);
+      handleApiError(error);
+    }
+  }
+
   // Gestion des erreurs API
   function handleApiError(error: any) {
     if (axios.isAxiosError(error)) {
@@ -100,5 +115,6 @@ export const useRestaurants = () => {
     getRestaurantByUser,
     editRestaurant,
     addRestaurant,
+    deleteRestaurant,
   };
 };

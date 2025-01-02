@@ -8,24 +8,33 @@ const currentTab = ref("restaurant");
 const restaurant = ref({});
 const dishes = ref([]);
 const orders = ref([]);
-const newDish = ref({ name: "", price: "", image: "", description: "" });
+const newDish = ref({
+  name: "",
+  price: "",
+  image: "",
+  description: "",
+});
 const showAddDishPanel = ref(false);
-const successMessage = ref(""); // Success message state
-const errorMessage = ref(""); // Error message state
+const successMessage = ref("");
+const errorMessage = ref("");
 
 const { getRestaurantByUser, editRestaurant } = useRestaurants();
 const { getDishesByRestaurant, addDish } = useDishes();
-const { getOrdersByRestaurant } = useOrders();
+const { getOrdersByRestaurant, deleteOrder } = useOrders();
 
-try {
-  const data = await getRestaurantByUser();
-  restaurant.value = data;
+const { data: restaurantData, error: restaurantError } = await useAsyncData(
+  "restaurantData",
+  getRestaurantByUser
+);
+
+// Initialisation des données après récupération
+if (restaurantData.value) {
+  restaurant.value = restaurantData.value;
   dishes.value = await getDishesByRestaurant(restaurant.value.id);
   orders.value = await getOrdersByRestaurant(restaurant.value.id);
-} catch (error) {
-  errorMessage.value = error.message || "Erreur lors du chargement des données.";
-  setTimeout(() => (errorMessage.value = ""), 3000);
-  console.error(error);
+} else if (restaurantError.value) {
+  errorMessage.value = "Erreur lors du chargement des données.";
+  console.error(restaurantError.value);
 }
 
 const updateRestaurant = async () => {
@@ -40,27 +49,32 @@ const updateRestaurant = async () => {
   }
 };
 
-const addNewDish = async () => {
+const addNewDish = async (dishData) => {
   try {
     successMessage.value = "";
     errorMessage.value = "";
-
-    await addDish(restaurant.value.id, newDish.value);
-
+    await addDish(restaurant.value.id, dishData);
     successMessage.value = "Plat ajouté avec succès.";
-    dishes.value = await getDishesByRestaurant(restaurant.value.id); // Rafraîchissement des plats
+    dishes.value = await getDishesByRestaurant(restaurant.value.id);
     showAddDishPanel.value = false;
     setTimeout(() => (successMessage.value = ""), 3000);
   } catch (error) {
-    console.error("Erreur lors de l'ajout du plat :", error);
-
-    if (error.response?.status === 400) {
-      errorMessage.value = error.response.data.error || "Requête invalide.";
-    } else {
-      errorMessage.value = `Une erreur inattendue s'est produite (${error.message}).`;
-    }
-
+    errorMessage.value = error.message || "Erreur lors de l'ajout du plat.";
     setTimeout(() => (errorMessage.value = ""), 5000);
+    console.error(error);
+  }
+};
+
+const handleCancelOrder = async (orderId) => {
+  try {
+    await deleteOrder(orderId); // Supprime la commande dans le backend
+    orders.value = orders.value.filter((order) => order.id !== orderId); // Supprime la commande dans le frontend
+    successMessage.value = "Commande supprimée avec succès.";
+    setTimeout(() => (successMessage.value = ""), 3000);
+  } catch (error) {
+    errorMessage.value = "Erreur lors de la suppression de la commande.";
+    setTimeout(() => (errorMessage.value = ""), 3000);
+    console.error(error);
   }
 };
 
@@ -123,11 +137,12 @@ const navigateToTab = (tab) => (currentTab.value = tab);
       <Orders
         v-if="currentTab === 'orders'"
         :orders="orders"
-        @cancelOrder="(id) => console.log('Cancel order:', id)"
+        @cancelOrder="handleCancelOrder"
       />
     </main>
   </div>
 </template>
+
 
 <style>
 .fade-slide-enter-active,

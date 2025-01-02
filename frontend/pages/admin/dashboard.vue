@@ -1,4 +1,8 @@
 <script setup>
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
+
 import { ref } from "vue";
 import NewRestaurant from "@/components/NewRestaurant.vue";
 import RestaurantList from "@/components/RestaurantList.vue";
@@ -33,16 +37,30 @@ const refreshRestaurants = () => {
 
 <template>
   <div class="flex min-h-screen bg-gray-100">
-    <aside class="w-64 bg-white shadow-lg">
-      <div class="p-4">
+    <aside
+      class="w-64 p-4 bg-white shadow-lg flex flex-col justify-between top-0 sticky"
+      style="max-height: calc(100vh - 24px)"
+    >
+      <div class="">
         <h1 class="text-xl font-bold text-purple-600 mb-8">Admin Dashboard</h1>
         <button
-          @click="toggleModal"
           class="w-full text-left px-4 py-2 rounded-lg bg-gray-100"
         >
           Restaurateurs
         </button>
       </div>
+      <!-- button logout -->
+      <button
+        @click="authStore.logout"
+        class="w-full text-left px-4 py-2 rounded-lg flex items-center"
+      >
+        <span class="flex">
+          <Icon name="material-symbols:logout" class="w-6 h-6 mr-2" />
+        </span>
+        <span class="text-black/90 text-base font-bold font-['Lexend']"
+          >Déconnexion</span
+        >
+      </button>
     </aside>
 
     <main class="flex-1 p-8">
@@ -96,7 +114,7 @@ const refreshRestaurants = () => {
             Ajouter un restaurant
           </button>
         </div>
-        <RestaurantList id="restaurant-list" />
+        <RestaurantAdminList id="restaurant-list" />
       </div>
     </main>
 
@@ -113,7 +131,13 @@ const refreshRestaurants = () => {
             X
           </button>
           <NewRestaurant
-            @success="(msg) => { handleSuccess(msg); toggleModal(); refreshRestaurants(); }"
+            @success="
+              (msg) => {
+                handleSuccess(msg);
+                toggleModal();
+                refreshRestaurants();
+              }
+            "
             @error="handleError"
           />
         </div>

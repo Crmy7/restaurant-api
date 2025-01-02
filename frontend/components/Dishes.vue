@@ -20,17 +20,13 @@ defineEmits(["addDish", "toggleAddDishPanel"]);
           :alt="dish.name"
           class="object-cover w-full h-full"
         />
-        <div
-          class="absolute inset-0 bg-black/40 flex flex-col justify-end p-4"
-        >
+        <div class="absolute inset-0 bg-black/40 flex flex-col justify-end p-4">
           <h3 class="text-white font-bold">{{ dish.name }}</h3>
           <p class="text-white text-sm">{{ dish.price }} €</p>
         </div>
       </div>
     </div>
-    <p v-else class="text-gray-500">
-      Aucun plat trouvé pour ce restaurant.
-    </p>
+    <p v-else class="text-gray-500">Aucun plat trouvé pour ce restaurant.</p>
 
     <!-- Bouton pour afficher le panneau d'ajout -->
     <button
@@ -41,12 +37,17 @@ defineEmits(["addDish", "toggleAddDishPanel"]);
     </button>
 
     <!-- Panneau d'ajout de plat -->
-    <div
-      v-if="showAddDishPanel"
-      class="mt-6 bg-gray-100 p-6 rounded-lg shadow"
-    >
+    <div v-if="showAddDishPanel" class="mt-6 bg-gray-100 p-6 rounded-lg shadow">
       <h3 class="text-xl font-bold mb-4">Ajouter un plat</h3>
-      <form @submit.prevent="$emit('addDish')" class="space-y-4">
+      <form
+        @submit.prevent="
+          () => {
+            console.log('Submitting:', newDish);
+            $emit('addDish', { ...newDish });
+          }
+        "
+        class="space-y-4"
+      >
         <div>
           <input
             v-model="newDish.name"

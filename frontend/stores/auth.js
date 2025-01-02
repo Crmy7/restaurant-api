@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useCookie } from "#app";
+import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -14,17 +15,16 @@ export const useAuthStore = defineStore("auth", {
     },
     async login(username, password) {
       try {
-        const { data, error } = await useFetch("/api/auth/login", {
-          baseURL: "http://localhost:2000",
-          method: "POST",
-          body: { username, password },
-        });
+        const response = await axios.post(
+          "http://localhost:2000/api/auth/login",
+          { username, password }
+        );
 
-        if (error.value) throw error.value;
+        const { token, user } = response.data;
 
-        this.token = data.value.token;
+        this.token = token;
         this.isAuthenticated = true;
-        this.user = data.value.user;
+        this.user = user;
         useCookie("authToken").value = this.token;
         this.tokenExpired = false; // Réinitialise l'état après une reconnexion
         return { success: true };
@@ -32,7 +32,7 @@ export const useAuthStore = defineStore("auth", {
         console.error("Erreur lors de la connexion :", error);
         return {
           success: false,
-          error: error.data?.error || "Erreur inconnue",
+          error: error.response?.data?.error || "Erreur inconnue",
         };
       }
     },
@@ -50,49 +50,49 @@ export const useAuthStore = defineStore("auth", {
           return null;
         }
 
-        const { data, error } = await useFetch("/api/users/@me", {
-          baseURL: "http://localhost:2000",
-          method: "GET",
+        const response = await axios.get("http://localhost:2000/api/users/@me", {
           headers: {
             Authorization: `Bearer ${this.token}`, // Ajoute le token à la requête
           },
         });
 
-        if (error.value) throw error.value;
-
-        this.user = data.value; // Met à jour les infos utilisateur
-        return data.value;
+        this.user = response.data; // Met à jour les infos utilisateur
+        return response.data;
       } catch (error) {
         console.error(
           "Erreur lors de la récupération de l'utilisateur :",
           error
         );
+        if (error.response?.status === 498) {
+          console.warn("Token expiré. Redirection vers la page de connexion.");
+          this.logout(); // Nettoie les informations de session
+        }
+
         this.user = null; // Réinitialise l'utilisateur en cas d'erreur
         throw error;
       }
     },
     async register(username, password, isAdmin = false) {
       try {
-        const url = isAdmin ? "/api/auth/admin/register" : "/api/auth/register";
+        const url = isAdmin
+          ? "http://localhost:2000/api/auth/admin/register"
+          : "http://localhost:2000/api/auth/register";
 
-        const { data, error } = await useFetch(url, {
-          baseURL: "http://localhost:2000",
-          method: "POST",
-          body: { username, password },
-        });
+        const response = await axios.post(url, { username, password });
 
-        if (error.value) throw error.value;
+        const { token, user } = response.data;
 
-        this.token = data.value.token;
+        this.token = token;
         this.isAuthenticated = true;
-        this.user = data.value.user;
+        this.user = user;
         useCookie("authToken").value = this.token;
+
         return { success: true };
       } catch (error) {
         console.error("Erreur lors de l'inscription :", error);
         return {
           success: false,
-          error: error.data?.error || "Erreur inconnue",
+          error: error.response?.data?.error || "Erreur inconnue",
         };
       }
     },

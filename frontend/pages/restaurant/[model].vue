@@ -8,14 +8,29 @@
       <p class="text-gray-500">{{ restaurant?.address }}</p>
     </div>
 
+    <!-- Barre de recherche pour les plats -->
+    <div class="max-w-7xl mx-auto mb-6">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Recherchez un plat par nom..."
+        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
+      />
+    </div>
+
     <!-- Liste des plats (utilisation de DishesGrid) -->
-    <DishesGrid :dishes="restaurant?.Dishes" />
+    <DishesGrid :dishes="filteredDishes" />
   </div>
 </template>
 
 <script setup>
+import { ref, computed } from "vue";
+import { useRoute } from "vue-router";
+import { useRestaurants } from "@/composables/useRestaurants";
+
 const route = useRoute();
 const restaurant = ref(null);
+const searchQuery = ref("");
 const { getRestaurantBySlug } = useRestaurants();
 
 try {
@@ -28,7 +43,18 @@ try {
   console.error("Erreur lors de la récupération des données :", error);
 }
 
+// Titre dynamique pour la page
 const title = computed(() => restaurant.value?.name || "Restaurant");
+
+// Propriété calculée pour filtrer les plats
+const filteredDishes = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return restaurant.value?.Dishes || [];
+  }
+  return restaurant.value?.Dishes.filter((dish) =>
+    dish.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
 </script>
 
 <style scoped>

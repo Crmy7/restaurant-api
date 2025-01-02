@@ -34,7 +34,7 @@
     <!-- bouton logout -->
     <Icon
       name="circum:power"
-      class="text-black/50 nav-link hover:text-black"
+      class="text-black/50 nav-link hover:text-black cursor-pointer"
       size="30"
       @click="authStore.logout"
     />

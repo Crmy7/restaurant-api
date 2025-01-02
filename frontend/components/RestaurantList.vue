@@ -1,8 +1,18 @@
 <template>
+  <!-- Barre de recherche -->
+  <div class="max-w-7xl mx-auto mb-6">
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="Recherchez un restaurant par nom..."
+      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
+    />
+  </div>
+
   <!-- Liste des restaurants -->
-  <div v-if="restaurants.length > 0" class="grid grid-cols-2 md:grid-cols-2 gap-4 max-w-7xl mx-auto">
+  <div v-if="filteredRestaurants.length > 0" class="grid grid-cols-2 md:grid-cols-2 gap-4 max-w-7xl mx-auto">
     <NuxtLink
-      v-for="restaurant in restaurants"
+      v-for="restaurant in filteredRestaurants"
       :key="restaurant.id"
       :to="`/restaurant/${restaurant.slug}`"
       class="relative flex h-36 xl:h-[300px] w-full rounded-md"
@@ -27,22 +37,19 @@
     </NuxtLink>
   </div>
 
-  <!-- IF no restaurant and admin redirect to /admin/dashboard -->
-  <NuxtLink
-    v-if="isAdmin && restaurants.length === 0"
-    to="/admin/dashboard"
-    class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-auto w-fit absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-  >
-    Ajouter un restaurant
-  </NuxtLink>
+  <!-- Message si aucun restaurant trouvé -->
+  <p v-else class="text-center text-gray-500 mt-6">
+    Aucun restaurant ne correspond à votre recherche.
+  </p>
+
 </template>
 
 <script setup>
+import { ref, computed } from "vue";
 const { getRestaurants } = useRestaurants();
-const restaurants = ref([]);
-import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore();
+const restaurants = ref([]);
+const searchQuery = ref("");
 
 // Charger les restaurants lors du montage du composant
 try {
@@ -52,9 +59,18 @@ try {
   console.error("Erreur lors de la récupération des restaurants :", error);
 }
 
-await authStore.getUser(); // Charge les informations de l'utilisateur connecté
-const isAdmin = ref(false);
-if (authStore.user.role === "admin") {
-  isAdmin.value = true;
-}
+// Propriété calculée pour filtrer les restaurants
+const filteredRestaurants = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return restaurants.value;
+  }
+  return restaurants.value.filter((restaurant) =>
+    restaurant.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
 </script>
+
+<style scoped>
+/* Ajoutez des styles personnalisés si nécessaire */
+</style>

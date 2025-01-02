@@ -13,13 +13,13 @@ require("./models/index.js");
 var authentificationMiddleware = require("./middlewares/authentification");
 
 // Importation des routes
-var indexRouter = require("./routes/index");
-var restaurantsManagementAdmin = require("./routes/admin/restaurant.js");
-var restaurantManagement = require("./routes/restaurant/restaurant.js");
-var dishManagement = require("./routes/restaurant/dish/dish.js");
+const indexRouter = require("./routes/index");
+const restaurantsManagementAdmin = require("./routes/admin/restaurant.js");
+const restaurantManagement = require("./routes/restaurant/restaurant.js");
+const dishManagement = require("./routes/restaurant/dish/dish.js");
 const adminAuth = require("./routes/auth/admin.js");
 const userAuth = require("./routes/auth/client.js");
-var usersRouter = require("./routes/users/user.js");
+const usersRouter = require("./routes/users/user.js");
 const ordersRouter = require("./routes/order/order.js");
 const orderRestaurant = require("./routes/restaurant/order/order.js");
 

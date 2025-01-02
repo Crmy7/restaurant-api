@@ -8,11 +8,13 @@ module.exports = async (req, res) => {
   const { id_restaurant } = req.params; // Récupérer l'ID du restaurant depuis l'URL
   const userId = req.user.id; // Récupérer l'ID de l'utilisateur actif depuis le token
 
+  console.log("Données reçues (JSON):", req.body);
+
   // Validation des données reçues
   if (!name || !price || !image || !description || !id_restaurant) {
-    console.log(name, price, image, description, id_restaurant);
-    return res.status(400).json({ error: `Tous les champs sont requis. ${name} ${price} ${image} ${description} ${id_restaurant}` });
-  }
+    console.log("Champs manquants : ", { name, price, image, description, id_restaurant });
+    return res.status(400).json({ error: "Tous les champs sont requis." });
+  }  
 
   try {
     // Vérifier si le restaurant existe

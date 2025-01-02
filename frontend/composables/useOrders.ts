@@ -39,6 +39,18 @@ export const useOrders = () => {
     }
   }
 
+  async function deleteOrder(orderId: number) {
+    try {
+      const response = await axios.delete(`${urlBase}manage/restaurant/order/${orderId}`, {
+        headers: authHeader(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Erreur dans useOrders.deleteOrder :", error);
+      handleApiError(error);
+    }
+  }  
+
   // Gestion des erreurs API
   function handleApiError(error: any) {
     if (axios.isAxiosError(error)) {
@@ -53,5 +65,6 @@ export const useOrders = () => {
   return {
     getOrders,
     getOrdersByRestaurant,
+    deleteOrder
   };
 };

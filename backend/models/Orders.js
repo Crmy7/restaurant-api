@@ -8,7 +8,7 @@ const Orders = sequelize.define("Orders", {
     autoIncrement: true,
   },
   status: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM("pending", "confirmed", "cancelled"),
     allowNull: false,
     defaultValue: "pending", // Statut de la commande
   },
