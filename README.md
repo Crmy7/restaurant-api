@@ -1,3 +1,7 @@
+# Introduction
+
+You can create a simple user when you sign up. If you need to create a user with admin privileges, you can click on the link 'Créer un compte administrateur' on the sign-up page.
+
 # Frontend
 
 ## Setup
