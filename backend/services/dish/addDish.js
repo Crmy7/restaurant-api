@@ -17,10 +17,16 @@ module.exports = async (req, res) => {
   }  
 
   try {
-    // Vérifier si le restaurant existe
+    // Vérifier si le restaurant existe et si l'utilisateur actif est le propriétaire
     const restaurant = await Restaurant.findByPk(id_restaurant);
     if (!restaurant) {
-      return res.status(404).json({ error: "Restaurant introuvable." });
+      return res.status(404).json({ error: "Restaurant non trouvé." });
+    }
+
+    if (restaurant.UserId !== userId) {
+      return res.status(403).json({
+        error: "Vous n'êtes pas autorisé à ajouter un plat pour ce restaurant.",
+      });
     }
 
     // Générer automatiquement le slug

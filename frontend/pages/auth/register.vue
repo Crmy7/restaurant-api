@@ -44,7 +44,11 @@
             />
           </div>
         </div>
-
+        <p>
+          <a href="/auth/admin/register" class="text-indigo-600 hover:underline"
+            >Créer un compte administrateur
+          </a>
+        </p>
         <div>
           <button
             type="submit"

@@ -45,7 +45,7 @@ async function authentificationMiddleware(req, res, next) {
     // Routes spécifiques aux administrateurs
     if (path.startsWith("/api/admin")) {
       if (user.role !== "admin") {
-        return res.status(403).json({ error: "Accès interdit : réservé aux administrateurs." });
+        return res.status(498).json({ error: "Accès interdit : réservé aux administrateurs." });
       }
     }
 

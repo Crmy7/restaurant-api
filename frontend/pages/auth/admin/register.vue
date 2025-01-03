@@ -77,7 +77,7 @@ const submit = async () => {
     true
   );
   if (success) {
-    navigateTo("/");
+    navigateTo("/admin/dashboard");
   } else {
     errorMessage.value = error;
   }

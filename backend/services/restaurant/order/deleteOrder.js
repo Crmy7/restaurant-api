@@ -10,6 +10,14 @@ module.exports = async (req, res) => {
       return res.status(404).json({ error: "Commande introuvable." });
     }
 
+    // Vérifier si l'utilisateur actif est le propriétaire de du restaurant order.userId
+    if (order.UserId !== req.user.id) {
+      return res.status(403).json({
+        error: "Vous n'êtes pas autorisé à supprimer cette commande.",
+      });
+    }
+
+
     // Supprimer la commande
     await order.destroy();
 
